@@ -23,8 +23,14 @@ public class Prestador {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "nome_negocio", nullable = false)
-    private String nomeNegocio;
+    @Column(name = "nome", nullable = false)
+    private String nome;
+
+    @Column(name = "email", nullable = false, unique = true)
+    private String email;
+
+    @Column(name = "telefone")
+    private String telefone;
 
     @Column(columnDefinition = "TEXT")
     private String descricao;

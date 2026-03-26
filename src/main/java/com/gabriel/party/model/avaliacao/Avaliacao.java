@@ -28,8 +28,10 @@ public class Avaliacao {
     @Column(name = "data_criacao")
     private LocalDateTime dataCriacao = LocalDateTime.now();
 
+    @Column(name = "ativo", nullable = false)
+    private Boolean ativo = true;
+
     @ManyToOne
     @JoinColumn(name = "prestador_id")
-    @Column(name = "prestador_id", nullable = false)
     private Prestador prestador;
 }
