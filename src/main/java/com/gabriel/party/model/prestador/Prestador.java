@@ -4,6 +4,7 @@ package com.gabriel.party.model.prestador;
 import com.gabriel.party.model.avaliacao.Avaliacao;
 import com.gabriel.party.model.categoria.Categoria;
 import com.gabriel.party.model.midia.Midia;
+import com.gabriel.party.model.prestador.endereco.Endereco;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -37,9 +38,8 @@ public class Prestador {
 
     private String whatsapp;
 
-    // Localização simplificada para o início do MVP
-    private Double latitude;
-    private Double longitude;
+    @Embedded
+    private Endereco endereco;
 
     @Column(name = "raio_atendimento_km")
     private Double raioAtendimentoKm;
