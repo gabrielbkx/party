@@ -12,6 +12,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 import java.util.List;
 import java.util.UUID;
@@ -28,6 +30,11 @@ public class ItemCatalogoController {
         this.itemCatalogoService = itemCatalogoService;
     }
 
+    @ApiResponses( value = {
+            @ApiResponse(responseCode = "201", description = "Item criado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Requisição inválida, dados incorretos ou faltando"),
+            @ApiResponse(responseCode = "404", description = "Prestador associado não encontrado")
+    })
     @Operation(summary = "Criar novo item de catálogo", description = "Cria um novo item (produto ou serviço) para um prestador.")
     @PostMapping
     public ResponseEntity<ItemCatalogoResponseDTO> criarItem(@Valid @RequestBody ItemCatalogoRequestDTO dto){
@@ -43,6 +50,9 @@ public class ItemCatalogoController {
         return ResponseEntity.created(uri).body(itemCriado);
     }
 
+    @ApiResponses( value = {
+            @ApiResponse(responseCode = "200", description = "Lista de itens retornada com sucesso")
+    })
     @Operation(summary = "Listar todos os itens", description = "Retorna uma lista paginada de todos os itens ativos.")
     @GetMapping
     public ResponseEntity<Page<ItemCatalogoResponseDTO>> listarTodosItens(
@@ -50,12 +60,19 @@ public class ItemCatalogoController {
         return ResponseEntity.ok(itemCatalogoService.listarItensCatalogo(pageable));
     }
 
+    @ApiResponses( value = {
+            @ApiResponse(responseCode = "200", description = "Vitrine do prestador retornada com sucesso")
+    })
     @Operation(summary = "Listar vitrine do prestador", description = "Retorna todos os itens ativos associados a um prestador específico.")
     @GetMapping("/prestador/{prestadorId}")
     public ResponseEntity<List<ItemCatalogoResponseDTO>> listarVitrineDoPrestador(@PathVariable UUID prestadorId){
         return ResponseEntity.ok(itemCatalogoService.listarVitrineDoPrestador(prestadorId));
     }
 
+    @ApiResponses( value = {
+            @ApiResponse(responseCode = "204", description = "Item inativado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Item de catálogo não encontrado")
+    })
     @Operation(summary = "Deletar item de catálogo", description = "Realiza a exclusão lógica (inativação) de um item pelo ID.")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletarItemCatalogo(@PathVariable UUID id){
@@ -63,6 +80,11 @@ public class ItemCatalogoController {
         return ResponseEntity.noContent().build();
     }
 
+    @ApiResponses( value = {
+            @ApiResponse(responseCode = "200", description = "Item de catálogo atualizado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Requisição inválida"),
+            @ApiResponse(responseCode = "404", description = "Item de catálogo não encontrado")
+    })
     @Operation(summary = "Atualizar item de catálogo", description = "Atualiza os dados de um item de catálogo existente pelo ID.")
     @PutMapping("/{id}")
     public ResponseEntity<ItemCatalogoResponseDTO> atualizarItemCatalogo(@Valid @RequestBody ItemCatalogoRequestDTO dto,
@@ -71,6 +93,10 @@ public class ItemCatalogoController {
         return ResponseEntity.ok(itemAtualizado);
     }
 
+    @ApiResponses( value = {
+            @ApiResponse(responseCode = "200", description = "Item de catálogo retornado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Item de catálogo não encontrado")
+    })
     @Operation(summary = "Buscar item", description = "Busca os detalhes de um item ativo pelo ID.")
     @GetMapping("/{id}")
     public ResponseEntity<ItemCatalogoResponseDTO> buscarItemPorId(@PathVariable UUID id){
@@ -78,4 +104,3 @@ public class ItemCatalogoController {
         return ResponseEntity.ok(item);
     }
 }
-

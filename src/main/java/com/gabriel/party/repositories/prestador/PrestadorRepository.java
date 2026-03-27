@@ -21,7 +21,8 @@ public interface PrestadorRepository extends JpaRepository<Prestador, UUID> {
     Optional<Prestador> findByIdAndAtivoTrue(UUID id);
 
     @Query(value = """
-    SELECT * FROM tb_prestador
+
+            SELECT * FROM tb_prestador
     WHERE (6371 * acos(
         cos(radians(:latCliente)) * cos(radians(latitude)) * cos(radians(longitude) - radians(:lonCliente)) + 
         sin(radians(:latCliente)) * sin(radians(latitude))
@@ -32,6 +33,26 @@ public interface PrestadorRepository extends JpaRepository<Prestador, UUID> {
     )) ASC
     """, nativeQuery = true)
     List<Prestador> buscarPorProximidade(
+            @Param("latCliente") Double lat,
+            @Param("lonCliente") Double lon,
+            @Param("raioKm") Double raio
+    );
+
+    @Query(value = """
+    SELECT prestador.* FROM tb_prestador prestador
+    WHERE prestador.categoria_id = :categoriaId
+      AND prestador.ativo = true
+      AND (6371 * acos(
+          cos(radians(:latCliente)) * cos(radians(prestador.latitude)) * cos(radians(prestador.longitude) - radians(:lonCliente)) + 
+          sin(radians(:latCliente)) * sin(radians(prestador.latitude))
+      )) <= :raioKm
+    ORDER BY (6371 * acos(
+          cos(radians(:latCliente)) * cos(radians(prestador.latitude)) * cos(radians(prestador.longitude) - radians(:lonCliente)) + 
+          sin(radians(:latCliente)) * sin(radians(prestador.latitude))
+    )) ASC
+    """, nativeQuery = true)
+    List<Prestador> buscarPorCategoriaEProximidade(
+            @Param("categoriaId") UUID categoriaId,
             @Param("latCliente") Double lat,
             @Param("lonCliente") Double lon,
             @Param("raioKm") Double raio

@@ -4,6 +4,8 @@ package com.gabriel.party.controllers.prestador;
 import com.gabriel.party.dtos.prestador.PrestadorRequestDTO;
 import com.gabriel.party.dtos.prestador.PrestadorResponseDTO;
 import com.gabriel.party.services.prestador.PrestadorService;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +31,12 @@ public class PrestadorController {
         this.prestadorService = prestadorService;
     }
 
+    @ApiResponses( value = {
+            @ApiResponse(responseCode = "201", description = "Prestador criado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Requisição inválida, dados incorretos ou faltando"),
+            @ApiResponse(responseCode = "404", description = "Categoria associada não encontrada"),
+            @ApiResponse(responseCode = "409", description = "Conflito, prestador com essee-mail já existe")
+    })
     @Operation(summary = "Criar novo prestador", description = "Cria um novo prestador associado a uma categoria e o retorna.")
     @PostMapping
     public ResponseEntity<PrestadorResponseDTO> criarPrestador(@Valid @RequestBody PrestadorRequestDTO dto) {
@@ -41,6 +49,9 @@ public class PrestadorController {
         return ResponseEntity.created(uri).body(prestadorCriado);
     }
 
+    @ApiResponses( value = {
+            @ApiResponse(responseCode = "200", description = "Lista de prestadores retornada com sucesso")
+    })
     @Operation(summary = "Listar prestadores", description = "Retorna uma lista paginada de todos os prestadores ativos.")
     @GetMapping
     public ResponseEntity<Page<PrestadorResponseDTO>> listarTodosPrestadores(
@@ -48,18 +59,31 @@ public class PrestadorController {
         return ResponseEntity.ok(prestadorService.listarPrestadores(pageable));
     }
 
+    @ApiResponses( value = {
+            @ApiResponse(responseCode = "200", description = "Prestador retornado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Prestador não encontrado")
+    })
     @Operation(summary = "Buscar prestador", description = "Busca os detalhes de um prestador ativo pelo ID.")
     @GetMapping("/{id}")
     public ResponseEntity<PrestadorResponseDTO> buscarPrestadorPorId(@PathVariable UUID id) {
         return ResponseEntity.ok(prestadorService.buscarPrestadorPorId(id));
     }
 
+    @ApiResponses( value = {
+            @ApiResponse(responseCode = "200", description = "Prestador atualizado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Requisição inválida"),
+            @ApiResponse(responseCode = "404", description = "Prestador ou categoria não encontrado")
+    })
     @Operation(summary = "Atualizar prestador", description = "Atualiza os dados de um prestador existente pelo ID.")
     @PutMapping("/{id}")
     public ResponseEntity<PrestadorResponseDTO> atualizarPrestador(@Valid @RequestBody PrestadorRequestDTO dto, @PathVariable UUID id) {
         return ResponseEntity.ok(prestadorService.atualizarPrestador(dto, id));
     }
 
+    @ApiResponses( value = {
+            @ApiResponse(responseCode = "204", description = "Prestador inativado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Prestador não encontrado")
+    })
     @Operation(summary = "Deletar prestador", description = "Realiza a exclusão lógica (inativação) de um prestador pelo ID.")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletarPrestador(@PathVariable UUID id) {
@@ -67,6 +91,10 @@ public class PrestadorController {
         return ResponseEntity.noContent().build();
     }
 
+    @ApiResponses( value = {
+            @ApiResponse(responseCode = "200", description = "Lista de prestadores próximos retornada com sucesso")
+    })
+    @Operation(summary = "Buscar por proximidade", description = "Retorna uma lista de prestadores mais próximos baseada nas coordenadas e raio fornecidos.")
     @GetMapping("/proximidade")
     public ResponseEntity<List<PrestadorResponseDTO>> buscarPorProximidade(
             @RequestParam Double lat,
@@ -74,6 +102,23 @@ public class PrestadorController {
             @RequestParam(defaultValue = "10.0") Double raio) { // Raio padrão de 10km
 
         var resultados = prestadorService.buscarPrestadoresProximos(lat, lon, raio);
+        return ResponseEntity.ok(resultados);
+    }
+
+    @ApiResponses( value = {
+            @ApiResponse(responseCode = "200", description = "Lista de prestadores filtrada retornada com sucesso")
+    })
+    @Operation(summary = "Filtrar prestadores por categoria e proximidade",
+            description = "Retorna uma lista de prestadores ativos que pertencem a uma categoria específica e estão" +
+                    " dentro de um raio definido a partir de coordenadas geográficas.")
+    @GetMapping("/filtro-radar")
+    public ResponseEntity<List<PrestadorResponseDTO>> filtrarPrestadores(
+            @RequestParam UUID categoriaId,
+            @RequestParam Double lat,
+            @RequestParam Double lon,
+            @RequestParam(required = false) Double raio) {
+
+        var resultados = prestadorService.buscarPorFiltros(categoriaId, lat, lon, raio);
         return ResponseEntity.ok(resultados);
     }
 }

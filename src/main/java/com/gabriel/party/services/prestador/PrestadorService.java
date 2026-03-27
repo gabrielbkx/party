@@ -107,10 +107,27 @@ public class PrestadorService {
         repository.save(prestador);
     }
 
+    @Transactional(readOnly = true)
+    //Aqui mostrando todos os prestadores proximos sem filtro.
+    //nos proximos passos vamos dar um jeito dele fazer um "top" prestadores mais proximos
     public List<PrestadorResponseDTO> buscarPrestadoresProximos(Double lat, Double lon, Double raio) {
 
         List<Prestador> prestadores = repository.buscarPorProximidade(lat, lon, raio);
 
+        return prestadores.stream()
+                .map(mapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<PrestadorResponseDTO> buscarPorFiltros(UUID categoriaId, Double lat, Double lon, Double raio) {
+        // Define um raio padrão de 50km se vier nulo
+        Double raioBusca = (raio != null) ? raio : 50.0;
+
+        // Chama o Repository com a Query de Haversine + Categoria
+        List<Prestador> prestadores = repository.buscarPorCategoriaEProximidade(categoriaId, lat, lon, raioBusca);
+
+        // Converte a lista de entidades (com itens e mídias) para DTOs
         return prestadores.stream()
                 .map(mapper::toDto)
                 .collect(Collectors.toList());

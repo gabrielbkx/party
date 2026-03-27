@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.UUID;
@@ -28,6 +30,11 @@ public class AvaliacaoController {
         this.avaliacaoService = avaliacaoService;
     }
 
+    @ApiResponses( value = {
+            @ApiResponse(responseCode = "201", description = "Avaliação criada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Requisição inválida, dados incorretos ou faltando"),
+            @ApiResponse(responseCode = "404", description = "Prestador associado não encontrado")
+    })
     @Operation(summary = "Criar nova avaliação",
             description = "Cria uma nova avaliação e a associa a um prestador.")
     @PostMapping
@@ -41,6 +48,9 @@ public class AvaliacaoController {
         return ResponseEntity.created(uri).body(avaliacaoCriada);
     }
 
+    @ApiResponses( value = {
+            @ApiResponse(responseCode = "200", description = "Lista de avaliações retornada com sucesso")
+    })
     @Operation(summary = "Listar todas as avaliações",
             description = "Retorna uma lista paginada de todas as avaliações ativas.")
     @GetMapping
@@ -49,6 +59,10 @@ public class AvaliacaoController {
         return ResponseEntity.ok(avaliacaoService.listarAvaliacoes(pageable));
     }
 
+    @ApiResponses( value = {
+            @ApiResponse(responseCode = "200", description = "Avaliação retornada com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Avaliação não encontrada")
+    })
     @Operation(summary = "Buscar avaliação",
             description = "Busca os detalhes de uma avaliação ativa pelo ID.")
     @GetMapping("/{id}")
@@ -56,6 +70,11 @@ public class AvaliacaoController {
         return ResponseEntity.ok(avaliacaoService.buscarAvaliacaoPorId(id));
     }
 
+    @ApiResponses( value = {
+            @ApiResponse(responseCode = "200", description = "Avaliação atualizada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Requisição inválida"),
+            @ApiResponse(responseCode = "404", description = "Avaliação não encontrada")
+    })
     @Operation(summary = "Atualizar avaliação",
             description = "Atualiza os dados de uma avaliação existente pelo ID.")
     @PutMapping("/{id}")
@@ -63,6 +82,10 @@ public class AvaliacaoController {
         return ResponseEntity.ok(avaliacaoService.atualizarAvaliacao(dto, id));
     }
 
+    @ApiResponses( value = {
+            @ApiResponse(responseCode = "204", description = "Avaliação inativada com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Avaliação não encontrada")
+    })
     @Operation(summary = "Deletar avaliação",
             description = "Realiza a exclusão lógica (inativação) de uma avaliação pelo ID.")
     @DeleteMapping("/{id}")
