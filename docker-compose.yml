@@ -1,0 +1,35 @@
+version: '3'
+services:
+
+  # Configuracao do Jaeger para coleta de traces
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger
+    ports:
+      - "16686:16686" # Interface Web (UI)
+      - "4317:4317"   # Porta para receber traces via gRPC (OpenTelemetry)
+      - "4318:4318"   # Porta para receber traces via HTTP
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+
+  # Configuracao do Prometheus para coleta de métricas
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml # Injeta o arquivo que criamos
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # Permite acesso ao Windows
+
+  # Configuracao do Grafana para visualizacao de métricas e traces
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin # Senha padrão para logar
+    depends_on:
+      - prometheus
