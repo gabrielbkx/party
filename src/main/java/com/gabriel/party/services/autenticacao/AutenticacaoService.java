@@ -1,5 +1,6 @@
-package com.gabriel.party.config.infra.security;
+package com.gabriel.party.services.autenticacao;
 
+import com.gabriel.party.config.infra.security.TokenService;
 import com.gabriel.party.dtos.autenticacao.cadastro.CadastroResponseDTO;
 import com.gabriel.party.dtos.autenticacao.cadastro.cliente.CadastroClienteDTO;
 import com.gabriel.party.dtos.autenticacao.cadastro.prestador.CadastroPrestadorDTO;
@@ -14,6 +15,7 @@ import com.gabriel.party.repositories.Usuario.UsuarioRepository;
 import com.gabriel.party.repositories.cliente.ClienteRepository;
 import com.gabriel.party.repositories.prestador.PrestadorRepository;
 import com.gabriel.party.services.cliente.ClienteService;
+import com.gabriel.party.services.integracoes.aws.ArmazenamentoService;
 import com.gabriel.party.services.prestador.PrestadorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,6 +24,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class AutenticacaoService implements UserDetailsService {
@@ -51,8 +54,8 @@ public class AutenticacaoService implements UserDetailsService {
     }
 
 
-    @Transactional
-    public CadastroResponseDTO cadastrarCliente(CadastroClienteDTO dto) {
+
+    public CadastroResponseDTO cadastrarCliente(CadastroClienteDTO dto, MultipartFile fotoPerfil) {
         validarEmailExistente(dto.email());
         validarCpfOuCnpjExistente(dto.cpf());
 
@@ -60,7 +63,8 @@ public class AutenticacaoService implements UserDetailsService {
         usuario.setSenha(encoder.encode(dto.senha()));
         usuario.setRole(Role.ROLE_CLIENTE);
 
-        Cliente clienteSalvo = clienteService.criarPerfilCliente(dto, usuario);
+        clienteService.criarPerfilCliente(dto, usuario, fotoPerfil);
+
         String tokenJwt = tokenService.gerarToken(usuario);
 
         return new CadastroResponseDTO(
@@ -71,7 +75,7 @@ public class AutenticacaoService implements UserDetailsService {
     }
 
 
-    public CadastroResponseDTO cadastrarPrestador(CadastroPrestadorDTO dto) {
+    public CadastroResponseDTO cadastrarPrestador(CadastroPrestadorDTO dto,MultipartFile fotoPerfil) {
 
         validarEmailExistente(dto.email());
         validarCpfOuCnpjExistente(dto.cnpjOuCpf());
@@ -80,7 +84,7 @@ public class AutenticacaoService implements UserDetailsService {
         usuario.setSenha(encoder.encode(dto.senha()));
         usuario.setRole(Role.ROLE_PRESTADOR);
 
-        Prestador prestadorSalvo = prestadorService.criarPerfilPrestador(dto, usuario);
+        prestadorService.criarPerfilPrestador(dto, usuario,fotoPerfil);
 
         String tokenJwt = tokenService.gerarToken(usuario);
 

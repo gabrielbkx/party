@@ -13,12 +13,15 @@ import com.gabriel.party.model.usuario.Usuario;
 import com.gabriel.party.repositories.Usuario.UsuarioRepository;
 import com.gabriel.party.repositories.categoria.CategoriaRepository;
 import com.gabriel.party.repositories.prestador.PrestadorRepository;
+import com.gabriel.party.services.integracoes.aws.ArmazenamentoService;
 import com.gabriel.party.services.integracoes.geocoding.GeocodingService;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -34,6 +37,7 @@ public class PrestadorService {
     private final PrestadorMapper mapper;
     private final GeocodingService geocodingService;
     private final UsuarioRepository usuarioRepository;
+    private final ArmazenamentoService armazenamentoService;
     private final Logger logger = Logger.getLogger(PrestadorService.class.getName());
 
     public PrestadorService(PrestadorRepository repository,
@@ -41,23 +45,24 @@ public class PrestadorService {
                             CategoriaRepository categoriaRepository,
                             PrestadorMapper mapper,
                             GeocodingService geocodingService,
-                            UsuarioRepository usuarioRepository) {
+                            UsuarioRepository usuarioRepository, ArmazenamentoService armazenamentoService) {
         this.repository = repository;
         this.usuarioMapper = usuarioMapper;
         this.categoriaRepository = categoriaRepository;
         this.mapper = mapper;
         this.geocodingService = geocodingService;
         this.usuarioRepository = usuarioRepository;
+        this.armazenamentoService = armazenamentoService;
     }
 
     @Transactional
-    public Prestador criarPerfilPrestador(CadastroPrestadorDTO dto, Usuario usuario) {
+    public Prestador criarPerfilPrestador(CadastroPrestadorDTO dto, Usuario usuario, MultipartFile fotoPerfil) {
 
         var categoria = categoriaRepository.findByIdAndAtivoTrue(dto.categoriaId())
                 .orElseThrow(() -> new AppException(ErrorCode.CATEGORIA_NAO_ENCONTRADA, dto.categoriaId().toString()));
 
-
         var novoPrestador = usuarioMapper.toPrestador(dto);
+        novoPrestador.setFotoPerfilUrl(armazenamentoService.salvarMidias(fotoPerfil));
         novoPrestador.setCategoria(categoria);
         novoPrestador.setUsuario(usuario);
 

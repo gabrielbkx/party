@@ -11,12 +11,14 @@ import com.gabriel.party.model.cliente.Cliente;
 import com.gabriel.party.model.usuario.Usuario;
 import com.gabriel.party.repositories.Usuario.UsuarioRepository;
 import com.gabriel.party.repositories.cliente.ClienteRepository;
+import com.gabriel.party.services.integracoes.aws.ArmazenamentoService;
 import com.gabriel.party.services.integracoes.geocoding.GeocodingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -28,17 +30,20 @@ public class ClienteService {
     private final UsuarioMapper usuarioMapper;
     private final UsuarioRepository usuarioRepository;
     private final GeocodingService geocodingService;
+    private final ArmazenamentoService armazenamentoService;
+
 
     @Autowired
     public ClienteService(ClienteRepository clienteRepository,
                           ClienteMapper mapper,
                           UsuarioMapper usuarioMapper,
-                          UsuarioRepository usuarioRepository, GeocodingService geocodingService) {
+                          UsuarioRepository usuarioRepository, GeocodingService geocodingService, ArmazenamentoService armazenamentoService) {
         this.clienteRepository = clienteRepository;
         this.mapper = mapper;
         this.usuarioMapper = usuarioMapper;
         this.usuarioRepository = usuarioRepository;
         this.geocodingService = geocodingService;
+        this.armazenamentoService = armazenamentoService;
     }
 
     @Transactional(readOnly = true)
@@ -86,11 +91,12 @@ public class ClienteService {
     }
 
     @Transactional
-    public Cliente criarPerfilCliente(CadastroClienteDTO dto, Usuario usuario) {
+    public Cliente criarPerfilCliente(CadastroClienteDTO dto, Usuario usuario, MultipartFile fotoPerfil) {
 
         Cliente novoCliente = usuarioMapper.toCliente(dto);
 
         novoCliente.setAtivo(true);
+        novoCliente.setFotoPerfilUrl(armazenamentoService.salvarMidias(fotoPerfil));
         novoCliente.setUsuario(usuario);
 
         String rua = dto.endereco().logradouro();
