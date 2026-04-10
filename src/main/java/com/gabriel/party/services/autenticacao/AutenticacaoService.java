@@ -1,23 +1,28 @@
 package com.gabriel.party.services.autenticacao;
 
 import com.gabriel.party.config.infra.security.TokenService;
+import com.gabriel.party.dtos.autenticacao.DadosRecuperacapDTO;
 import com.gabriel.party.dtos.autenticacao.cadastro.CadastroResponseDTO;
 import com.gabriel.party.dtos.autenticacao.cadastro.cliente.CadastroClienteDTO;
 import com.gabriel.party.dtos.autenticacao.cadastro.prestador.CadastroPrestadorDTO;
 import com.gabriel.party.exceptions.AppException;
 import com.gabriel.party.exceptions.enums.ErrorCode;
 import com.gabriel.party.mapper.autenticacao.UsuarioMapper;
+import com.gabriel.party.model.autenticacao.CodigoRecuperacao;
 import com.gabriel.party.model.cliente.Cliente;
 import com.gabriel.party.model.prestador.Prestador;
 import com.gabriel.party.model.usuario.Usuario;
 import com.gabriel.party.model.usuario.enums.Role;
 import com.gabriel.party.repositories.Usuario.UsuarioRepository;
+import com.gabriel.party.repositories.autenticacao.CodigoRecuperacaoRepository;
 import com.gabriel.party.repositories.cliente.ClienteRepository;
 import com.gabriel.party.repositories.prestador.PrestadorRepository;
 import com.gabriel.party.services.cliente.ClienteService;
+import com.gabriel.party.services.email.EmailService;
 import com.gabriel.party.services.integracoes.aws.ArmazenamentoService;
 import com.gabriel.party.services.prestador.PrestadorService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.config.annotation.web.oauth2.client.OAuth2ClientSecurityMarker;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -25,6 +30,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDateTime;
+import java.util.Random;
 
 @Service
 public class AutenticacaoService implements UserDetailsService {
@@ -45,6 +53,10 @@ public class AutenticacaoService implements UserDetailsService {
     PrestadorService prestadorService;
     @Autowired
     ClienteService clienteService;
+    @Autowired
+    CodigoRecuperacaoRepository codigoRecuperacaoRepository;
+    @Autowired
+    EmailService emailService;
 
 
     @Override
@@ -93,6 +105,38 @@ public class AutenticacaoService implements UserDetailsService {
                 dto.nomeCompleto(),
                 usuario.getEmail(),
                 tokenJwt);
+    }
+
+    public void enviarCodigoRecuperacao(DadosRecuperacapDTO dados) {
+
+        var email = dados.email();
+
+        usuarioRepository.findByEmail(email).ifPresent(user -> {
+
+            String pin = String.format("%06d", new Random().nextInt(1000000));
+
+            CodigoRecuperacao codigoRecuperacao = new CodigoRecuperacao();
+            codigoRecuperacao.setCodigoPin(pin);
+            codigoRecuperacao.setDataExpiracao(LocalDateTime.now().plusMinutes(15));
+            codigoRecuperacao.setUsuario(user);
+            codigoRecuperacaoRepository.save(codigoRecuperacao);
+
+            String assunto = "Recuperação de Senha - FestConnect";
+            String corpoEmail = String.format(
+                    "Olá, %s!\n\n" +
+                            "Recebemos uma solicitação para redefinir a sua senha.\n" +
+                            "Use o código abaixo para prosseguir:\n\n" +
+                            "CÓDIGO: %s\n\n" +
+                            "Este código é válido por 15 minutos. Se não foi você quem solicitou, " +
+                            "apenas ignore este e-mail por segurança.\n\n" +
+                            "Atenciosamente,\nEquipe de Suporte.", pin
+            );
+
+            emailService.enviarEmail(user.getEmail(), assunto, corpoEmail);
+
+        });
+
+
     }
 
     private void validarEmailExistente(String email) {

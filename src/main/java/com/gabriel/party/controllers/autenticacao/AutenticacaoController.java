@@ -1,5 +1,6 @@
 package com.gabriel.party.controllers.autenticacao;
 
+import com.gabriel.party.dtos.autenticacao.DadosRecuperacapDTO;
 import com.gabriel.party.services.autenticacao.AutenticacaoService;
 import com.gabriel.party.config.infra.security.TokenService;
 import com.gabriel.party.dtos.autenticacao.cadastro.CadastroResponseDTO;
@@ -70,5 +71,11 @@ public class AutenticacaoController {
                 .path("/{id}").buildAndExpand(prestadorCadastrado.id()).toUri();
 
         return ResponseEntity.created(uri).body(prestadorCadastrado);
+    }
+
+    @PostMapping("/recuperacao-senha")
+    public ResponseEntity<Void> iniciarRecuperacaoSenha(@RequestBody DadosRecuperacapDTO email) {
+        autenticacaoService.enviarCodigoRecuperacao(email);
+        return ResponseEntity.ok().build();
     }
 }
