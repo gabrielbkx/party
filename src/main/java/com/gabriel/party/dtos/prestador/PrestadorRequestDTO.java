@@ -10,7 +10,6 @@ public record PrestadorRequestDTO(
         @NotBlank @Email(message = " " )
         String email,
         String descricao,
-
         @NotNull(message = "O número de WhatsApp é obrigatório")
         @Pattern(regexp = "\\d{10,11}", message = "O número de WhatsApp deve " +
                 "conter apenas dígitos e ter entre 10 e 11 caracteres")

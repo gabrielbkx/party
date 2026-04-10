@@ -1,22 +1,20 @@
 package com.gabriel.party.controllers.autenticacao;
 
-import com.gabriel.party.config.infra.security.AutenticacaoService;
+import com.gabriel.party.services.autenticacao.AutenticacaoService;
 import com.gabriel.party.config.infra.security.TokenService;
-import com.gabriel.party.dtos.autenticacao.cadastro.CadastroRequestDTO;
 import com.gabriel.party.dtos.autenticacao.cadastro.CadastroResponseDTO;
 import com.gabriel.party.dtos.autenticacao.cadastro.cliente.CadastroClienteDTO;
 import com.gabriel.party.dtos.autenticacao.cadastro.prestador.CadastroPrestadorDTO;
 import com.gabriel.party.dtos.autenticacao.login.LoginRequestDTO;
 import com.gabriel.party.dtos.autenticacao.login.TokenResponseDTO;
 import com.gabriel.party.model.usuario.Usuario;
+import com.gabriel.party.services.integracoes.aws.ArmazenamentoService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
@@ -27,9 +25,10 @@ public class AutenticacaoController {
     private final AuthenticationManager authenticationManager;
     private final AutenticacaoService autenticacaoService;
 
+
     public AutenticacaoController(TokenService tokenService,
                                   AuthenticationManager authenticationManager,
-                                  AutenticacaoService autenticacaoService) {
+                                  AutenticacaoService autenticacaoService, ArmazenamentoService armazenamentoService) {
         this.tokenService = tokenService;
         this.authenticationManager = authenticationManager;
         this.autenticacaoService = autenticacaoService;
@@ -48,8 +47,11 @@ public class AutenticacaoController {
     }
 
     @PostMapping("/cadastro/cliente")
-    public ResponseEntity<CadastroResponseDTO> cadastrarCliente(@RequestBody @Valid CadastroClienteDTO dto) {
-        var clienteCadastrado = autenticacaoService.cadastrarCliente(dto);
+    public ResponseEntity<CadastroResponseDTO> cadastrarCliente(@@RequestPart("dados") @Valid CadastroClienteDTO dto,
+                                                                @RequestPart(value = "foto", required = false)
+                                                                MultipartFile fotoPerfil) {
+
+        var clienteCadastrado = autenticacaoService.cadastrarCliente(dto, fotoPerfil);
 
         var uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}").buildAndExpand(clienteCadastrado.id()).toUri();
@@ -58,8 +60,11 @@ public class AutenticacaoController {
     }
 
     @PostMapping("/cadastro/prestador")
-    public ResponseEntity<CadastroResponseDTO> cadastrarPrestador(@RequestBody @Valid CadastroPrestadorDTO dto) {
-        var prestadorCadastrado = autenticacaoService.cadastrarPrestador(dto);
+    public ResponseEntity<CadastroResponseDTO> cadastrarPrestador(@RequestPart("dados") @Valid CadastroPrestadorDTO dto,
+                                                                  @RequestPart(value = "foto", required = false)
+                                                                  MultipartFile fotoPerfil) {
+
+        var prestadorCadastrado = autenticacaoService.cadastrarPrestador(dto, fotoPerfil);
 
         var uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}").buildAndExpand(prestadorCadastrado.id()).toUri();

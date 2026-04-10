@@ -39,6 +39,9 @@ public class Prestador {
     @Column(name = "whatsapp", nullable = true)
     private String whatsapp;
 
+    @Column(name = "foto_perfil_url", nullable = true)
+    private String fotoPerfilUrl;
+
     @Embedded
     private Endereco endereco;
 

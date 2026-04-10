@@ -35,6 +35,9 @@ public class Cliente {
     @Column(name = "whatsapp")
     private String whatsapp;
 
+    @Column(name = "foto_perfil_url")
+    private String fotoPerfilUrl;
+
     @Embedded
     private Endereco endereco;
 
