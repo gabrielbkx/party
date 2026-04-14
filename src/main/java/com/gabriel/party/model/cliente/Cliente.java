@@ -29,9 +29,6 @@ public class Cliente {
     @Column(name = "nome", nullable = false)
     private String nomeCompleto;
 
-    @Column(name = "cpf", unique = true, nullable = false)
-    private String cpf;
-
     @Column(name = "whatsapp")
     private String whatsapp;
 
