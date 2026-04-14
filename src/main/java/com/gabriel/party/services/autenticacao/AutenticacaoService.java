@@ -66,7 +66,6 @@ public class AutenticacaoService implements UserDetailsService {
 
     public CadastroResponseDTO cadastrarCliente(CadastroClienteDTO dto, MultipartFile fotoPerfil) {
         validarEmailExistente(dto.email());
-        validarCpfOuCnpjExistente(dto.cpf());
 
         Usuario usuario = mapper.toUsuarioCliente(dto);
         usuario.setSenha(encoder.encode(dto.senha()));
@@ -113,13 +112,7 @@ public class AutenticacaoService implements UserDetailsService {
 
     private void validarCpfOuCnpjExistente(String cpfOuCnpj) {
 
-        boolean cpfExiste = clienteRepository.existsByCpf(cpfOuCnpj);
         boolean cnpjExiste = prestadorRepository.existsByCnpjOuCpf(cpfOuCnpj);
-
-        if (cpfExiste){
-            throw new AppException(ErrorCode.JA_EXISTE_POR_CPF,
-                    "Já existe um cadastro com esse CPF", cpfOuCnpj);
-        }
 
         if (cnpjExiste){
             throw new AppException(ErrorCode.JA_EXISTE_POR_CNPJ,

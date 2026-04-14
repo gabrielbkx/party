@@ -12,8 +12,6 @@ import java.util.UUID;
 @Repository
 public interface ClienteRepository extends JpaRepository<Cliente, UUID> {
 
-    boolean existsByCpf(String cpfOuCnpj);
-
     Page<Cliente> findAllByAtivoTrue(Pageable pageable);
 
     Optional<Cliente> findByIdAndAtivoTrue(UUID id);

@@ -18,9 +18,5 @@ public record CadastroClienteDTO(
         @NotBlank(message = "A senha é obrigatória")
         String senha,
 
-        @NotBlank(message = "O CPF é obrigatório")
-        @Pattern(regexp = "(^\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}$)|(^\\d{11}$)", message = "Formato de CPF inválido")
-        String cpf,
-
         EnderecoDTO endereco
 ) {}

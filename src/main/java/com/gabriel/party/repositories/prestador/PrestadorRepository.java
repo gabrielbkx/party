@@ -58,7 +58,6 @@ public interface PrestadorRepository extends JpaRepository<Prestador, UUID> {
 
     boolean existsByCnpjOuCpf(String cpfOuCnpj);
 
-    Optional<Prestador> findByEmailAndAtivoTrue(String email);
 
     Optional<Prestador> findByUsuarioIdAndAtivoTrue(UUID usuarioId);
 }
